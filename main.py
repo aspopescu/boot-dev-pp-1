@@ -1,4 +1,3 @@
-from tkinter import Button
 from window import *
 from frame import *
 from arena import *
