@@ -1,4 +1,4 @@
-from tkinter import Tk, BOTH, Canvas
+from tkinter import Tk, BOTH, Canvas, ttk, font
 import time
 
 class Window:
@@ -30,6 +30,36 @@ class Window:
     def _animate(self):
         self.redraw()
         time.sleep(0.00035)
+
+    def add_button(self, button):
+        button.create(self.__canvas)
+
+class Button:
+    def __init__(self, text, host_frame=None, command=None):
+        self._text = text
+        self._host_frame = host_frame
+        self._command = command
+
+    def create(self, canvas):
+        if self._host_frame is None:
+            return
+        self._width = self._host_frame._x2 - self._host_frame._x1
+        self._height = self._host_frame._y2 - self._host_frame._y1
+        self._font_size = int(self._height / 2)
+        self._font = font.Font(family="Lucida Console", size=self._font_size, weight="bold")
+
+        self._style = ttk.Style()
+        self._style.configure("Custom.TButton", font=self._font)
+        self._button = ttk.Button(canvas, text=self._text)
+        self._button.config(style="Custom.TButton")
+        canvas.create_window(
+            self._host_frame._x1, 
+            self._host_frame._y1, 
+            width=self._width, 
+            height=self._height, 
+            anchor="nw", 
+            window=self._button
+        )
 
 class Point:
     def __init__(self, x, y):

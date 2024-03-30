@@ -15,6 +15,7 @@ class Frame:
             self._generic_distance = generic_distance
         self.game_wall_length = 0
         self.arena = 0
+        self.buttons_area = 0
         self._frames = []
         self._draw_frames()      
 
@@ -70,6 +71,7 @@ class Frame:
             self._draw_frame(f)
         self.game_wall_length = scoreboard_y2 - scoreboard_y1
         self.arena = bottom_square
+        self.buttons_area = actions_rectangle
 
     def _draw_frame(self, i):
         self._frames[i].draw()

@@ -4,15 +4,16 @@ class Arena:
     def __init__(self, win, frame):
         self._win = win
         self._frame = frame
+        # keeps the arena cell in sync with the scoreboard cells, but I do not like it
         self._wall_length = self._frame.game_wall_length
+        # let the player set the self._wall_length
+        # self._wall_length = 50
+        # or set a default value if the scoreboard cells are huge
+        # if cell wall is bigger than 60, than the arena cell wall is 50
+        # or maybe give 3 choices: 35, 50, 70
         self._arena = self._frame.arena
         self._arena_center()
-#        self._main_cell = self._draw_main_cell()
         self._cells = []
-#        self._logic_tuples: a list of tuples, they decide the direction of new x and y coordinates
-#        self._logic_tuples = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-# creating arena cells starting from layer 1, the center is layer 0
-#        self._create_cells_r(1)
         self._create_cells()
         self._draw_cells(self._cells)
 
@@ -21,6 +22,7 @@ class Arena:
         self.arena_mid_x = self._arena._x1 + self._arena_mid
         self.arena_mid_y = self._arena._y1 + self._arena_mid
 
+# keeping _draw_main_cell() for "just in case"
     def _draw_main_cell(self):
         self.main_cell_x1 = self.arena_mid_x - self._wall_length / 2
         self.main_cell_y1 = self.arena_mid_y - self._wall_length / 2
@@ -30,63 +32,18 @@ class Arena:
         main_cell.draw()
         return main_cell
 
-# original implementation
-#    def _create_cells_r(self, layer):
-#        # determine if there is space for a new cell
-#        if self._arena._x2 - (self._main_cell._x2 + self._wall_length * (layer - 1)) < self._wall_length + 1:
-#            return
-#        for t in self._logic_tuples:
-#            cell_x1 = self.main_cell_x1 + self._wall_length * t[0] * layer
-#            cell_y1 = self.main_cell_y1 + self._wall_length * t[1] * layer
-#            cell_x2 = cell_x1 + self._wall_length
-#            cell_y2 = cell_y1 + self._wall_length
-#            axis_cell = Cell(cell_x1, cell_y1, cell_x2, cell_y2, self._win)
-#            self._cells.append(axis_cell)
-#            if layer == 1:
-#                continue
-#            for l in range(1, layer):
-#                diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
-#                diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l)
-#                diagonal_x2 = diagonal_x1 + self._wall_length
-#                diagonal_y2 = diagonal_y1 + self._wall_length
-#                diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
-#                self._cells.append(diagonal_cell)
-#        self._create_cells_r(layer + 1)
-
-# improved the original implementation, but I knew that it could be done differently   
-#    def _create_cells_r(self, layer):
-#        # determine if there is space for a new cell
-#        if self._arena._x2 - (self._main_cell._x2 + self._wall_length * (layer - 1)) < self._wall_length + 1:
-#            # this is adds and extra layer, so that the arena ends up with 3 cells instead of 1
-#            for t in self._logic_tuples:
-#                for l in range(1, layer):
-#                    diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
-#                    diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l)
-#                    diagonal_x2 = diagonal_x1 + self._wall_length
-#                    diagonal_y2 = diagonal_y1 + self._wall_length
-#                    diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
-#                    self._cells.append(diagonal_cell)
-#            return
-#        layer = layer + 1
-#        for t in self._logic_tuples:
-#            for l in range(layer):
-#                diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
-#                diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l - 1)
-#                diagonal_x2 = diagonal_x1 + self._wall_length
-#                diagonal_y2 = diagonal_y1 + self._wall_length
-#                diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
-#                self._cells.append(diagonal_cell)
-#        self._create_cells_r(layer)
-
-# a different approach, I like the above implementation more, but this one has fewer moving parts
+# a different approach, I like the implementation found in notes more, but this one has fewer moving parts
     def _create_cells(self):
         # determine the count of colums using the arena width and self.wall_length
         count_cols = int((self._arena._x2 - self._arena._x1) / self._wall_length )
+        if count_cols % 2 == 0:
+            count_cols -= 1
         start_x1 = self._arena._x1 + (self._arena._x2 - self._arena._x1 - count_cols * self._wall_length) / 2
         start_y1 = self._arena._y1 + (self._arena._x2 - self._arena._x1 - count_cols * self._wall_length) / 2
         half_length = round((count_cols - 1) / 2)
         # the max cells near the margin, the original pen and paper game has 1 cell as the margin end
-        # but I like the margin end to be 3; the logic following it is built for the margin_max being 3
+        # but I like the margin end to be #!/usr/bin/env python3
+        # logic following it is built for the margin_max being 3
         margin_max = 3
         for a in range(count_cols):
             if a < half_length - 1:

@@ -1,3 +1,4 @@
+from tkinter import Button
 from window import *
 from frame import *
 from arena import *
@@ -12,5 +13,8 @@ def main():
     win = Window(window_width, window_height)
     add_frame = Frame(generic_distance, generic_distance, win, generic_distance)
     Arena(win, add_frame)
+    reset_button = Button("Reset", host_frame=add_frame.buttons_area)
+    win.add_button(reset_button)
+
     win.wait_for_close()
 main()
