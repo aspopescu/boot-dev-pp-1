@@ -1,7 +1,7 @@
 1. arena.py
 
-- the below code was the initial logic(2 interation of the same idea) for drawing the arena cells
-- the approach was to draw starting from the center of the arena to outside
+- the below code was the initial logic(2 iteration of the same idea) for drawing the arena cells
+- the approach was to draw starting from the center of the arena to the outside
 - settled with a method that draws starting from the arena's left side to its right side
 
 #        self._main_cell = self._draw_main_cell()
