@@ -1,0 +1,60 @@
+1. arena.py
+
+- the below code was the initial logic(2 interation of the same idea) for drawing the arena cells
+- the approach was to draw starting from the center of the arena to outside
+- settled with a method that draws starting from the arena's left side to its right side
+
+#        self._main_cell = self._draw_main_cell()
+#        self._logic_tuples: a list of tuples, they decide the direction of new x and y coordinates
+#        self._logic_tuples = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+# creating arena cells starting from layer 1, the center is layer 0
+#        self._create_cells_r(1)
+
+# original implementation
+#    def _create_cells_r(self, layer):
+#        # determine if there is space for a new cell
+#        if self._arena._x2 - (self._main_cell._x2 + self._wall_length * (layer - 1)) < self._wall_length + 1:
+#            return
+#        for t in self._logic_tuples:
+#            cell_x1 = self.main_cell_x1 + self._wall_length * t[0] * layer
+#            cell_y1 = self.main_cell_y1 + self._wall_length * t[1] * layer
+#            cell_x2 = cell_x1 + self._wall_length
+#            cell_y2 = cell_y1 + self._wall_length
+#            axis_cell = Cell(cell_x1, cell_y1, cell_x2, cell_y2, self._win)
+#            self._cells.append(axis_cell)
+#            if layer == 1:
+#                continue
+#            for l in range(1, layer):
+#                diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
+#                diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l)
+#                diagonal_x2 = diagonal_x1 + self._wall_length
+#                diagonal_y2 = diagonal_y1 + self._wall_length
+#                diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
+#                self._cells.append(diagonal_cell)
+#        self._create_cells_r(layer + 1)
+
+# improved the original implementation, but I knew that it could be done differently   
+#    def _create_cells_r(self, layer):
+#        # determine if there is space for a new cell
+#        if self._arena._x2 - (self._main_cell._x2 + self._wall_length * (layer - 1)) < self._wall_length + 1:
+#            # this is adds and extra layer, so that the arena ends up with 3 cells instead of 1
+#            for t in self._logic_tuples:
+#                for l in range(1, layer):
+#                    diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
+#                    diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l)
+#                    diagonal_x2 = diagonal_x1 + self._wall_length
+#                    diagonal_y2 = diagonal_y1 + self._wall_length
+#                    diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
+#                    self._cells.append(diagonal_cell)
+#            return
+#        layer = layer + 1
+#        for t in self._logic_tuples:
+#            for l in range(layer):
+#                diagonal_x1 = self.main_cell_x1 + self._wall_length * (t[0] + t[1]) * l
+#                diagonal_y1 = self.main_cell_y1 + self._wall_length * (t[0] - t[1]) * (layer - l - 1)
+#                diagonal_x2 = diagonal_x1 + self._wall_length
+#                diagonal_y2 = diagonal_y1 + self._wall_length
+#                diagonal_cell = Cell(diagonal_x1, diagonal_y1, diagonal_x2, diagonal_y2, self._win)
+#                self._cells.append(diagonal_cell)
+#        self._create_cells_r(layer)
+
