@@ -7,6 +7,7 @@ class Window:
         self.__root.title("Biscuit")
         self.__canvas = Canvas(self.__root, width=width, height=height)
         self.__canvas.pack(fill=BOTH, expand=True)
+        self.__canvas.bind("<Button-1>", self.find_closest_element)
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -38,20 +39,72 @@ class Window:
     def add_button(self, button):
         button.create(self.__canvas)
 
+    def find_closest_element(self, event):
+        closest_element = self.__canvas.find_closest(event.x, event.y)[0]
+        print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {self.__canvas.coords(closest_element)}")
+        
+        print(f"distance between closest element and mouse cursor: {self.mouse_cursor_position(event.x, event.y, self.__canvas.coords(closest_element))}")
+
+        print(f"clicked near element: {self.element_in_click_range(self.mouse_cursor_position(event.x, event.y, self.__canvas.coords(closest_element)))}")
+
+    def mouse_cursor_position(self, event_x, event_y, element_coordinates):
+        element_x1 = element_coordinates[0]
+        element_y1 = element_coordinates[1]
+        element_x2 = element_coordinates[2]
+        element_y2 = element_coordinates[3]
+        mouse_position = ""
+        if element_x1 == element_x2:
+            if event_x < element_x1:
+                mouse_position = "left"
+            elif event_x == element_x1:
+                mouse_position = "overlap"
+            else:
+                mouse_position = "right"
+        if element_y1 == element_y2:
+            if event_y < element_y1:
+                mouse_position = "top"
+            elif event_y == element_y1:
+                mouse_position = "overlap"
+            else:
+                mouse_position = "bottom"
+        info_packet = [mouse_position, (event_x, event_y), (element_x1, element_y1)]
+        return info_packet
+
+    def element_in_click_range(self, data):
+        if data[0] == "overlap":
+            return True
+        max_range = 2
+        if data[0] in ("top", "bottom"):
+            if abs(int(data[2][1] - data[1][1])) <= max_range:
+                return True
+        if data[0] in ("left", "right"):
+            if abs(int(data[2][0] - data[1][0])) <= max_range:
+                return True
+        return False
+
+
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
+    def __repr__(self):
+        return f"Point(x({self.x}), y({self.y}))"
+
 class Line:
     def __init__(self, point1, point2):
         self.point1 = point1
         self.point2 = point2
+        self.id = 0
 
     def draw(self, canvas, fill_color="black", dash=None):
-        canvas_id = canvas.create_line(self.point1.x, self.point1.y, self.point2.x, self.point2.y, fill=fill_color, width=2, dash=dash)
+        self.id = canvas.create_line(self.point1.x, self.point1.y, self.point2.x, self.point2.y, fill=fill_color, width=2, dash=dash)
         canvas.pack(fill=BOTH, expand=True)
-        return canvas_id
+        return self.id
+
+    def __repr__(self):
+        return f"Line(Point1({self.point1}), Point2({self.point2}), id({self.id}))"
+
 
 class Cell:
     def __init__(self, x1, y1, x2, y2, win=None):

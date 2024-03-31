@@ -14,7 +14,6 @@ class Arena:
         self._arena = self._frame.arena
         self._cells = []
         self._create_cells()
-        # self._draw_cells(self._cells)
 
 # a different approach, I like the implementation found in notes more, but this one has fewer moving parts
     def _create_cells(self):
