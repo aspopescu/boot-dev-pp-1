@@ -7,7 +7,12 @@ class Window:
         self.__root.title("Biscuit")
         self.__canvas = Canvas(self.__root, width=width, height=height)
         self.__canvas.pack(fill=BOTH, expand=True)
-        self.__canvas.bind("<Button-1>", self.find_closest_element)
+        #self.__canvas.bind("<Button-1>", self.find_closest_element)
+        self._line_dash_pattern = 3
+        self._closest_element = 0
+        self.__canvas.bind("<Motion>", self.mouse_motion)
+        #self.__canvas.bind("<Motion>", self.element_dash_check)
+
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -39,13 +44,31 @@ class Window:
     def add_button(self, button):
         button.create(self.__canvas)
 
+    def mouse_motion(self, event):
+        self.find_closest_element(event)
+        self.element_dash_check(event)
+
     def find_closest_element(self, event):
         closest_element = self.__canvas.find_closest(event.x, event.y)[0]
-        print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {self.__canvas.coords(closest_element)}")
-        
-        print(f"distance between closest element and mouse cursor: {self.mouse_cursor_position(event.x, event.y, self.__canvas.coords(closest_element))}")
+        closest_element_coordinates = self.__canvas.coords(closest_element)
+        cursor_element_data = self.mouse_cursor_position(event.x, event.y, closest_element_coordinates)
+        element_in_range = self.element_in_click_range(cursor_element_data)
+        print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {closest_element_coordinates}")
+        print(f"mouser cursor position, cursor, element coordinates: {cursor_element_data}")
+        print(f"cursor near element: {element_in_range}")
+        if element_in_range:
+            self._closest_element = closest_element
+            return self._closest_element
 
-        print(f"clicked near element: {self.element_in_click_range(self.mouse_cursor_position(event.x, event.y, self.__canvas.coords(closest_element)))}")
+    def element_dash_check(self, event):
+        print(f"event: {event}")
+        print(f"element: {self._closest_element}")
+        current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
+        print(f"current_pattern: {current_pattern}")
+        if current_pattern != '':
+            print(int(current_pattern) == int(self._line_dash_pattern))
+            if int(current_pattern) == int(self._line_dash_pattern):
+                print("matching dash pattern")
 
     def mouse_cursor_position(self, event_x, event_y, element_coordinates):
         element_x1 = element_coordinates[0]
@@ -74,11 +97,9 @@ class Window:
         if data[0] == "overlap":
             return True
         max_range = 2
-        if data[0] in ("top", "bottom"):
-            if abs(int(data[2][1] - data[1][1])) <= max_range:
+        if data[0] in ("top", "bottom") and abs(int(data[2][1] - data[1][1])) <= max_range:
                 return True
-        if data[0] in ("left", "right"):
-            if abs(int(data[2][0] - data[1][0])) <= max_range:
+        if data[0] in ("left", "right") and abs(int(data[2][0] - data[1][0])) <= max_range:
                 return True
         return False
 
@@ -126,33 +147,33 @@ class Cell:
     def draw(self):
         if self._win is None:
             return
-        dash = 3
         if self.has_left_wall:
             wall_id = self._win.draw_line(self.left_wall)
         else:
-            wall_id = self._win.draw_line(self.left_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.left_wall, "#b3b3cb", self._win._line_dash_pattern)
         self.walls_ids.append(wall_id)
 
         if self.has_right_wall:
             wall_id = self._win.draw_line(self.right_wall)
         else:
-            wall_id = self._win.draw_line(self.right_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.right_wall, "#b3b3cb", self._win._line_dash_pattern)
         self.walls_ids.append(wall_id)
 
         if self.has_top_wall:
             wall_id = self._win.draw_line(self.top_wall)
         else:
-            wall_id = self._win.draw_line(self.top_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.top_wall, "#b3b3cb", self._win._line_dash_pattern)
         self.walls_ids.append(wall_id)
 
         if self.has_bottom_wall:
             wall_id = self._win.draw_line(self.bottom_wall)
         else:
-            wall_id = self._win.draw_line(self.bottom_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.bottom_wall, "#b3b3cb", self._win._line_dash_pattern)
         self.walls_ids.append(wall_id)
 
     def __repr__(self):
         return f"Cell({self._x1},{self._y1},{self._x2},{self._y2},{self.has_left_wall},{self.has_right_wall},{self.has_top_wall},{self.has_bottom_wall})"
+
 
 class Button:
     def __init__(self, text, host_frame=None, command=None):
