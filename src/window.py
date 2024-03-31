@@ -22,7 +22,11 @@ class Window:
             self.redraw()
 
     def draw_line(self, line, fill_color="black", dash=None):
-        line.draw(self.__canvas, fill_color, dash)
+        line_id = line.draw(self.__canvas, fill_color, dash)
+        return line_id
+
+    def delete_element(self, element):
+        self.__canvas.delete(element)
 
     def close(self):
         self.__window_running = False
@@ -33,33 +37,6 @@ class Window:
 
     def add_button(self, button):
         button.create(self.__canvas)
-
-class Button:
-    def __init__(self, text, host_frame=None, command=None):
-        self._text = text
-        self._host_frame = host_frame
-        self._command = command
-
-    def create(self, canvas):
-        if self._host_frame is None:
-            return
-        self._width = self._host_frame._x2 - self._host_frame._x1
-        self._height = self._host_frame._y2 - self._host_frame._y1
-        self._font_size = int(self._height / 2)
-        self._font = font.Font(family="Lucida Console", size=self._font_size, weight="bold")
-
-        self._style = ttk.Style()
-        self._style.configure("Custom.TButton", font=self._font)
-        self._button = ttk.Button(canvas, text=self._text)
-        self._button.config(style="Custom.TButton")
-        canvas.create_window(
-            self._host_frame._x1, 
-            self._host_frame._y1, 
-            width=self._width, 
-            height=self._height, 
-            anchor="nw", 
-            window=self._button
-        )
 
 class Point:
     def __init__(self, x, y):
@@ -72,8 +49,9 @@ class Line:
         self.point2 = point2
 
     def draw(self, canvas, fill_color="black", dash=None):
-        canvas.create_line(self.point1.x, self.point1.y, self.point2.x, self.point2.y, fill=fill_color, width=2, dash=dash)
+        canvas_id = canvas.create_line(self.point1.x, self.point1.y, self.point2.x, self.point2.y, fill=fill_color, width=2, dash=dash)
         canvas.pack(fill=BOTH, expand=True)
+        return canvas_id
 
 class Cell:
     def __init__(self, x1, y1, x2, y2, win=None):
@@ -90,28 +68,65 @@ class Cell:
         self.right_wall = Line(Point(self._x2, self._y1), Point(self._x2, self._y2))
         self.top_wall = Line(Point(self._x1, self._y1), Point(self._x2, self._y1))
         self.bottom_wall = Line(Point(self._x1, self._y2), Point(self._x2, self._y2))
+        self.walls_ids = []
 
     def draw(self):
         if self._win is None:
             return
         dash = 3
         if self.has_left_wall:
-            self._win.draw_line(self.left_wall)
+            wall_id = self._win.draw_line(self.left_wall)
         else:
-            self._win.draw_line(self.left_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.left_wall, "#b3b3cb", dash)
+        self.walls_ids.append(wall_id)
+
         if self.has_right_wall:
-            self._win.draw_line(self.right_wall)
+            wall_id = self._win.draw_line(self.right_wall)
         else:
-            self._win.draw_line(self.right_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.right_wall, "#b3b3cb", dash)
+        self.walls_ids.append(wall_id)
+
         if self.has_top_wall:
-            self._win.draw_line(self.top_wall)
+            wall_id = self._win.draw_line(self.top_wall)
         else:
-            self._win.draw_line(self.top_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.top_wall, "#b3b3cb", dash)
+        self.walls_ids.append(wall_id)
+
         if self.has_bottom_wall:
-            self._win.draw_line(self.bottom_wall)
+            wall_id = self._win.draw_line(self.bottom_wall)
         else:
-            self._win.draw_line(self.bottom_wall, "#b3b3cb", dash)
+            wall_id = self._win.draw_line(self.bottom_wall, "#b3b3cb", dash)
+        self.walls_ids.append(wall_id)
 
     def __repr__(self):
         return f"Cell({self._x1},{self._y1},{self._x2},{self._y2},{self.has_left_wall},{self.has_right_wall},{self.has_top_wall},{self.has_bottom_wall})"
+
+class Button:
+    def __init__(self, text, host_frame=None, command=None):
+        self._text = text
+        self._host_frame = host_frame
+        self._command = command
+
+    def create(self, canvas):
+        if self._host_frame is None:
+            return
+        if self._command is None:
+            return
+        self._width = self._host_frame._x2 - self._host_frame._x1
+        self._height = self._host_frame._y2 - self._host_frame._y1
+        self._font_size = int(self._height / 2)
+        self._font = font.Font(family="Lucida Console", size=self._font_size, weight="bold")
+
+        self._style = ttk.Style()
+        self._style.configure("Custom.TButton", font=self._font)
+        self._button = ttk.Button(canvas, text=self._text, command=self._command)
+        self._button.config(style="Custom.TButton")
+        canvas.create_window(
+            self._host_frame._x1, 
+            self._host_frame._y1, 
+            width=self._width, 
+            height=self._height, 
+            anchor="nw", 
+            window=self._button
+        )
 

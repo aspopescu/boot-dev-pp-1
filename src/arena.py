@@ -12,25 +12,9 @@ class Arena:
         # if cell wall is bigger than 60, than the arena cell wall is 50
         # or maybe give 3 choices: 35, 50, 70
         self._arena = self._frame.arena
-        self._arena_center()
         self._cells = []
         self._create_cells()
-        self._draw_cells(self._cells)
-
-    def _arena_center(self):
-        self._arena_mid = (self._arena._x2 - self._arena._x1) / 2
-        self.arena_mid_x = self._arena._x1 + self._arena_mid
-        self.arena_mid_y = self._arena._y1 + self._arena_mid
-
-# keeping _draw_main_cell() for "just in case"
-    def _draw_main_cell(self):
-        self.main_cell_x1 = self.arena_mid_x - self._wall_length / 2
-        self.main_cell_y1 = self.arena_mid_y - self._wall_length / 2
-        self.main_cell_x2 = self.main_cell_x1 + self._wall_length
-        self.main_cell_y2 = self.main_cell_y1 + self._wall_length
-        main_cell = Cell(self.main_cell_x1, self.main_cell_y1, self.main_cell_x2, self.main_cell_y2, self._win)
-        main_cell.draw()
-        return main_cell
+        # self._draw_cells(self._cells)
 
 # a different approach, I like the implementation found in notes more, but this one has fewer moving parts
     def _create_cells(self):
@@ -83,10 +67,14 @@ class Arena:
                         cell.has_right_wall = True
                 self._cells.append(cell)
 
-    def _draw_cells(self, cells):
-        for cell in cells:
+    def draw_cells(self):
+        for cell in self._cells:
             cell.draw()
         self._win._animate()
 
-
-
+    def redraw_cells(self):
+        for cell in self._cells:
+            for line in cell.walls_ids:
+                self._win.delete_element(line)
+        self.draw_cells()
+ 

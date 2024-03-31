@@ -11,8 +11,9 @@ def main():
     generic_distance = 18
     win = Window(window_width, window_height)
     add_frame = Frame(generic_distance, generic_distance, win, generic_distance)
-    Arena(win, add_frame)
-    reset_button = Button("Reset", host_frame=add_frame.buttons_area)
+    arena = Arena(win, add_frame)
+    arena.draw_cells()
+    reset_button = Button("New board", host_frame=add_frame.buttons_area, command=arena.redraw_cells)
     win.add_button(reset_button)
 
     win.wait_for_close()

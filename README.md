@@ -2,6 +2,8 @@
 
 https://www.boot.dev/learn/build-personal-project-1
 
+https://tkdocs.com/tutorial/canvas.html
+
 ***
 
 ## How to play "Biscuit":
