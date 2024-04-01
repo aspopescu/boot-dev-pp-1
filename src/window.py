@@ -10,7 +10,9 @@ class Window:
         self._line_dash_pattern = 3
         self._closest_element = 0
         self._element_in_range = False
+        self._element_to_edit = 0
         self.__canvas.bind("<Motion>", self.mouse_motion)
+        self.__canvas.bind("<ButtonRelease-1>", self.mouse_action_fill_line)
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -44,7 +46,7 @@ class Window:
 
     def mouse_motion(self, event):
         self.find_closest_element(event)
-        self.element_dash_check(event)
+        self.element_dash_check()
 
     def find_closest_element(self, event):
         closest_element = self.__canvas.find_closest(event.x, event.y)[0]
@@ -59,25 +61,6 @@ class Window:
         if element_in_range:
             self._closest_element = closest_element
         self._element_in_range = element_in_range
-
-    def element_dash_check(self, event):
-        print("-------------------")
-        print(f"event: {event}")
-        print(f"element: {self._closest_element}")
-        current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
-        print(f"current_pattern: {current_pattern}")
-        if current_pattern != '':
-            print(int(current_pattern) == int(self._line_dash_pattern))
-            if int(current_pattern) == int(self._line_dash_pattern):
-                print("matching dash pattern")
-            if self._element_in_range:
-                self.update_mouse_cursor("pencil")
-            else:
-                self.update_mouse_cursor("arrow")
-        print("-------------------")
-
-    def update_mouse_cursor(self, new_cursor):
-        self.__canvas.config(cursor=new_cursor)
 
     def mouse_cursor_position(self, event_x, event_y, element_coordinates):
         element_x1 = element_coordinates[0]
@@ -112,6 +95,35 @@ class Window:
                 return True
         return False
 
+    def element_dash_check(self):
+        print("-------------------")
+        print(f"element: {self._closest_element}")
+        current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
+        print(f"current_pattern: {current_pattern}")
+        if current_pattern != '':
+            print(int(current_pattern) == int(self._line_dash_pattern))
+            if int(current_pattern) == int(self._line_dash_pattern):
+                print("matching dash pattern")
+                if self._element_in_range:
+                    self.update_mouse_cursor("pencil")
+                    self._element_to_edit = self._closest_element
+                else:
+                    self.update_mouse_cursor("arrow")
+                    self._element_to_edit = 0
+        print("-------------------")
+
+    def update_mouse_cursor(self, new_cursor):
+        self.__canvas.config(cursor=new_cursor)
+
+    def mouse_action_fill_line(self, event):
+        print("FFFFFFFFFFFFFFFFFFF")
+        print(f"_element_to_edit: {self._element_to_edit}")
+        if self._element_to_edit != 0:
+            print("can edit something")
+            self.__canvas.itemconfig(self._element_to_edit, dash=(), fill="black")
+            self.update_mouse_cursor("arrow")
+        print("FFFFFFFFFFFFFFFFFFF")
+        
 
 class Point:
     def __init__(self, x, y):
