@@ -7,12 +7,10 @@ class Window:
         self.__root.title("Biscuit")
         self.__canvas = Canvas(self.__root, width=width, height=height)
         self.__canvas.pack(fill=BOTH, expand=True)
-        #self.__canvas.bind("<Button-1>", self.find_closest_element)
         self._line_dash_pattern = 3
         self._closest_element = 0
+        self._element_in_range = False
         self.__canvas.bind("<Motion>", self.mouse_motion)
-        #self.__canvas.bind("<Motion>", self.element_dash_check)
-
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -53,14 +51,17 @@ class Window:
         closest_element_coordinates = self.__canvas.coords(closest_element)
         cursor_element_data = self.mouse_cursor_position(event.x, event.y, closest_element_coordinates)
         element_in_range = self.element_in_click_range(cursor_element_data)
+        print("===================")
         print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {closest_element_coordinates}")
         print(f"mouser cursor position, cursor, element coordinates: {cursor_element_data}")
         print(f"cursor near element: {element_in_range}")
+        print("===================")
         if element_in_range:
             self._closest_element = closest_element
-            return self._closest_element
+        self._element_in_range = element_in_range
 
     def element_dash_check(self, event):
+        print("-------------------")
         print(f"event: {event}")
         print(f"element: {self._closest_element}")
         current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
@@ -69,6 +70,14 @@ class Window:
             print(int(current_pattern) == int(self._line_dash_pattern))
             if int(current_pattern) == int(self._line_dash_pattern):
                 print("matching dash pattern")
+            if self._element_in_range:
+                self.update_mouse_cursor("pencil")
+            else:
+                self.update_mouse_cursor("arrow")
+        print("-------------------")
+
+    def update_mouse_cursor(self, new_cursor):
+        self.__canvas.config(cursor=new_cursor)
 
     def mouse_cursor_position(self, event_x, event_y, element_coordinates):
         element_x1 = element_coordinates[0]
