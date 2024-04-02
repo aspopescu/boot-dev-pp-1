@@ -4,18 +4,11 @@ class Arena:
     def __init__(self, win, frame):
         self._win = win
         self._frame = frame
-        # keeps the arena cell in sync with the scoreboard cells, but I do not like it
         self._wall_length = self._frame.game_wall_length
-        # let the player set the self._wall_length
-        # self._wall_length = 50
-        # or set a default value if the scoreboard cells are huge
-        # if cell wall is bigger than 60, than the arena cell wall is 50
-        # or maybe give 3 choices: 35, 50, 70
         self._arena = self._frame.arena
         self._cells = []
         self._create_cells()
 
-# a different approach, I like the implementation found in notes more, but this one has fewer moving parts
     def _create_cells(self):
         # determine the count of colums using the arena width and self.wall_length
         count_cols = int((self._arena._x2 - self._arena._x1) / self._wall_length )
@@ -25,7 +18,7 @@ class Arena:
         start_y1 = self._arena._y1 + (self._arena._x2 - self._arena._x1 - count_cols * self._wall_length) / 2
         half_length = round((count_cols - 1) / 2)
         # the max cells near the margin, the original pen and paper game has 1 cell as the margin end
-        # but I like the margin end to be #!/usr/bin/env python3
+        # but I like the margin end to be 3
         # logic following it is built for the margin_max being 3
         margin_max = 3
         for a in range(count_cols):

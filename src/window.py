@@ -11,8 +11,9 @@ class Window:
         self._closest_element = 0
         self._element_in_range = False
         self._element_to_edit = 0
+        self._edited_element = 0
         self.__canvas.bind("<Motion>", self.mouse_motion)
-        self.__canvas.bind("<ButtonRelease-1>", self.mouse_action_fill_line)
+        self.__canvas.bind("<ButtonRelease-1>", self.mouse_button_1_release)
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -49,6 +50,7 @@ class Window:
         self.element_dash_check()
 
     def find_closest_element(self, event):
+        self._element_to_edit = 0
         closest_element = self.__canvas.find_closest(event.x, event.y)[0]
         closest_element_coordinates = self.__canvas.coords(closest_element)
         cursor_element_data = self.mouse_cursor_position(event.x, event.y, closest_element_coordinates)
@@ -88,7 +90,7 @@ class Window:
     def element_in_click_range(self, data):
         if data[0] == "overlap":
             return True
-        max_range = 2
+        max_range = 4
         if data[0] in ("top", "bottom") and abs(int(data[2][1] - data[1][1])) <= max_range:
                 return True
         if data[0] in ("left", "right") and abs(int(data[2][0] - data[1][0])) <= max_range:
@@ -107,15 +109,20 @@ class Window:
                 if self._element_in_range:
                     self.update_mouse_cursor("pencil")
                     self._element_to_edit = self._closest_element
+                    self._edited_element = self._element_to_edit
                 else:
                     self.update_mouse_cursor("arrow")
-                    self._element_to_edit = 0
+                    self._edited_element = 0
         print("-------------------")
 
     def update_mouse_cursor(self, new_cursor):
         self.__canvas.config(cursor=new_cursor)
 
-    def mouse_action_fill_line(self, event):
+    def mouse_button_1_release(self, event):
+        self.update_dash_and_fill()
+        self.line_properties()
+
+    def update_dash_and_fill(self):
         print("FFFFFFFFFFFFFFFFFFF")
         print(f"_element_to_edit: {self._element_to_edit}")
         if self._element_to_edit != 0:
@@ -123,7 +130,15 @@ class Window:
             self.__canvas.itemconfig(self._element_to_edit, dash=(), fill="black")
             self.update_mouse_cursor("arrow")
         print("FFFFFFFFFFFFFFFFFFF")
-        
+    
+    def line_properties(self):
+        if self._edited_element != 0:
+            print(self._edited_element)
+            
+
+
+
+
 
 class Point:
     def __init__(self, x, y):
