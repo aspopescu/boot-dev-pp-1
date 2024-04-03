@@ -13,6 +13,9 @@ def main():
     add_frame = Frame(generic_distance, generic_distance, win, generic_distance)
     arena = Arena(win, add_frame)
     arena.draw_cells()
+    initial_arena = arena._cells
+    win.import_arena_cells(arena._cells)
+
     reset_button = Button("New board", host_frame=add_frame.buttons_area, command=arena.redraw_cells)
     win.add_button(reset_button)
 

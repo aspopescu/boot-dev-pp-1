@@ -8,10 +8,12 @@ class Window:
         self.__canvas = Canvas(self.__root, width=width, height=height)
         self.__canvas.pack(fill=BOTH, expand=True)
         self._line_dash_pattern = 3
-        self._closest_element = 0
-        self._element_in_range = False
-        self._element_to_edit = 0
-        self._edited_element = 0
+        #self._closest_element = 0
+        #self._element_in_range = False
+        #self._element_to_edit = 0
+        #self._element_is_vertical = False
+        #self._element_is_horizontal = False
+        #self._element_sharing_cells = []
         self.__canvas.bind("<Motion>", self.mouse_motion)
         self.__canvas.bind("<ButtonRelease-1>", self.mouse_button_1_release)
         self.__window_running = False
@@ -46,19 +48,27 @@ class Window:
         button.create(self.__canvas)
 
     def mouse_motion(self, event):
+        self._closest_element = 0
+        self._element_in_range = False
+        self._element_to_edit = 0
+        self._element_is_vertical = False
+        self._element_is_horizontal = False
+        self._element_sharing_cells = []
         self.find_closest_element(event)
         self.element_dash_check()
 
     def find_closest_element(self, event):
-        self._element_to_edit = 0
         closest_element = self.__canvas.find_closest(event.x, event.y)[0]
         closest_element_coordinates = self.__canvas.coords(closest_element)
         cursor_element_data = self.mouse_cursor_position(event.x, event.y, closest_element_coordinates)
         element_in_range = self.element_in_click_range(cursor_element_data)
         print("===================")
         print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {closest_element_coordinates}")
-        print(f"mouser cursor position, cursor, element coordinates: {cursor_element_data}")
-        print(f"cursor near element: {element_in_range}")
+        print(f"mouse cursor position, cursor, element coordinates: {cursor_element_data}")
+        print(f"mouse cursor near element: {element_in_range}")
+        print(f"self._element_is_vertical: {self._element_is_vertical}")
+        print(f"self._element_is_horizontal: {self._element_is_horizontal}")
+        print(f"element cells: {self._element_sharing_cells}")
         print("===================")
         if element_in_range:
             self._closest_element = closest_element
@@ -71,6 +81,7 @@ class Window:
         element_y2 = element_coordinates[3]
         mouse_position = ""
         if element_x1 == element_x2:
+            self._element_is_vertical = True
             if event_x < element_x1:
                 mouse_position = "left"
             elif event_x == element_x1:
@@ -78,6 +89,7 @@ class Window:
             else:
                 mouse_position = "right"
         if element_y1 == element_y2:
+            self._element_is_horizontal = True
             if event_y < element_y1:
                 mouse_position = "top"
             elif event_y == element_y1:
@@ -95,6 +107,7 @@ class Window:
                 return True
         if data[0] in ("left", "right") and abs(int(data[2][0] - data[1][0])) <= max_range:
                 return True
+        self.update_mouse_cursor("arrow")
         return False
 
     def element_dash_check(self):
@@ -102,38 +115,85 @@ class Window:
         print(f"element: {self._closest_element}")
         current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
         print(f"current_pattern: {current_pattern}")
-        if current_pattern != '':
+        if current_pattern != "":
             print(int(current_pattern) == int(self._line_dash_pattern))
             if int(current_pattern) == int(self._line_dash_pattern):
                 print("matching dash pattern")
+                print(f"self._element_is_vertical: {self._element_is_vertical}")
+                print(f"self._element_is_horizontal: {self._element_is_horizontal}")
                 if self._element_in_range:
                     self.update_mouse_cursor("pencil")
                     self._element_to_edit = self._closest_element
-                    self._edited_element = self._element_to_edit
-                else:
-                    self.update_mouse_cursor("arrow")
-                    self._edited_element = 0
+                    self.find_element_sharing_cells()
+                    print(f"element cells: {self._element_sharing_cells}")
         print("-------------------")
 
     def update_mouse_cursor(self, new_cursor):
         self.__canvas.config(cursor=new_cursor)
 
+    def find_element_sharing_cells(self):
+        print("@@@@@@@@@@@@@@@@@@@")
+        print(f"self._element_to_edit: {self._element_to_edit}")
+        e_coordinates = self.__canvas.coords(self._element_to_edit)
+        print(f"element_coordinates: {e_coordinates}")
+        e_x1, e_y1, e_x2, e_y2 = e_coordinates[0], e_coordinates[1], e_coordinates[2], e_coordinates[3]
+        print(f"x1, y2, x2, y2: {e_x1, e_y1, e_x2, e_y2}")
+        if self._element_is_vertical:
+            print("for vertical line, make 2 horizontal cells")
+            left_cell_x2, left_cell_y2 = e_x1, e_y2
+            right_cell_x1, right_cell_y1 = e_x1, e_y1
+            for cell in self._arena_cells:
+                if cell._x2 == left_cell_x2 and cell._y2 == left_cell_y2:
+                    print(f"left cell found: {cell}")
+                    self._element_sharing_cells.append(self._arena_cells.index(cell))
+                if cell._x1 == right_cell_x1 and cell._y1 == right_cell_y1:
+                    print(f"right cell found: {cell}")
+                    self._element_sharing_cells.append(self._arena_cells.index(cell))
+        if self._element_is_horizontal:
+            print("for horizontal line, make 2 vertical cells")
+            top_cell_x2, top_cell_y2 = e_x2, e_y1
+            bottom_cell_x1, bottom_cell_y1 = e_x1, e_y1
+            for cell in self._arena_cells:
+                if cell._x2 == top_cell_x2 and cell._y2 == top_cell_y2:
+                    print(f"top cell found: {cell}")
+                    self._element_sharing_cells.append(self._arena_cells.index(cell))
+                if cell._x1 == bottom_cell_x1 and cell._y1 == bottom_cell_y1:
+                    print(f"bottom cell found: {cell}")
+                    self._element_sharing_cells.append(self._arena_cells.index(cell))
+        print("@@@@@@@@@@@@@@@@@@@")
+
+    def import_arena_cells(self, arena_cells):
+        print("&&&&&&&&&&&&&&&&&&&")
+        self._arena_cells = arena_cells
+        print("&&&&&&&&&&&&&&&&&&&")
+
     def mouse_button_1_release(self, event):
-        self.update_dash_and_fill()
+        self.update_element_and_cell()
         self.line_properties()
 
-    def update_dash_and_fill(self):
+    def update_element_and_cell(self):
         print("FFFFFFFFFFFFFFFFFFF")
         print(f"_element_to_edit: {self._element_to_edit}")
         if self._element_to_edit != 0:
             print("can edit something")
             self.__canvas.itemconfig(self._element_to_edit, dash=(), fill="black")
             self.update_mouse_cursor("arrow")
+
+            print(f"001a: {self._arena_cells[self._element_sharing_cells[0]]}")
+            print(f"002a: {self._arena_cells[self._element_sharing_cells[1]]}")
+            if self._element_is_vertical:
+                self._arena_cells[self._element_sharing_cells[0]].has_right_wall = True
+                self._arena_cells[self._element_sharing_cells[1]].has_left_wall = True
+            if self._element_is_horizontal:
+                self._arena_cells[self._element_sharing_cells[0]].has_bottom_wall = True
+                self._arena_cells[self._element_sharing_cells[1]].has_top_wall = True
+        
+            print(f"001b: {self._arena_cells[self._element_sharing_cells[0]]}")
+            print(f"002b: {self._arena_cells[self._element_sharing_cells[1]]}")
         print("FFFFFFFFFFFFFFFFFFF")
     
     def line_properties(self):
-        if self._edited_element != 0:
-            print(self._edited_element)
+        pass
             
 
 
@@ -208,7 +268,7 @@ class Cell:
         self.walls_ids.append(wall_id)
 
     def __repr__(self):
-        return f"Cell({self._x1},{self._y1},{self._x2},{self._y2},{self.has_left_wall},{self.has_right_wall},{self.has_top_wall},{self.has_bottom_wall})"
+        return f"Cell({self._x1}, {self._y1}, {self._x2}, {self._y2}, {self.has_left_wall}, {self.has_right_wall}, {self.has_top_wall}, {self.has_bottom_wall})"
 
 
 class Button:
