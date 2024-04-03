@@ -15,6 +15,8 @@ def main():
     
     arena = Arena(win, add_frame)
 
+    win.import_arena_cells(arena._cells)
+
     def new_board_commands():
         arena.redraw_cells()
         win.import_arena_cells(arena._cells)
