@@ -6,8 +6,9 @@ class Arena:
         self._frame = frame
         self._wall_length = self._frame.game_wall_length
         self._arena = self._frame.arena
-        self._cells = []
+        
         self._create_cells()
+        self._draw_cells(self._cells)
 
     def _create_cells(self):
         # determine the count of colums using the arena width and self.wall_length
@@ -21,6 +22,7 @@ class Arena:
         # but I like the margin end to be 3
         # logic following it is built for the margin_max being 3
         margin_max = 3
+        self._cells = []
         for a in range(count_cols):
             if a < half_length - 1:
                 to_keep_blank = count_cols - margin_max - 2 * a
@@ -59,8 +61,8 @@ class Arena:
                         cell.has_right_wall = True
                 self._cells.append(cell)
 
-    def draw_cells(self):
-        for cell in self._cells:
+    def _draw_cells(self, cells):
+        for cell in cells:
             cell.draw()
         self._win._animate()
 
@@ -68,5 +70,6 @@ class Arena:
         for cell in self._cells:
             for line in cell.walls_ids:
                 self._win.delete_element(line)
-        self.draw_cells()
+        self._create_cells()
+        self._draw_cells(self._cells)
  

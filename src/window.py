@@ -8,12 +8,6 @@ class Window:
         self.__canvas = Canvas(self.__root, width=width, height=height)
         self.__canvas.pack(fill=BOTH, expand=True)
         self._line_dash_pattern = 3
-        #self._closest_element = 0
-        #self._element_in_range = False
-        #self._element_to_edit = 0
-        #self._element_is_vertical = False
-        #self._element_is_horizontal = False
-        #self._element_sharing_cells = []
         self.__canvas.bind("<Motion>", self.mouse_motion)
         self.__canvas.bind("<ButtonRelease-1>", self.mouse_button_1_release)
         self.__window_running = False
@@ -74,29 +68,26 @@ class Window:
             self._closest_element = closest_element
         self._element_in_range = element_in_range
 
-    def mouse_cursor_position(self, event_x, event_y, element_coordinates):
-        element_x1 = element_coordinates[0]
-        element_y1 = element_coordinates[1]
-        element_x2 = element_coordinates[2]
-        element_y2 = element_coordinates[3]
+    def mouse_cursor_position(self, event_x, event_y, element_coords):
+        e_x1, e_y1, e_x2, e_y2 = element_coords[0], element_coords[1], element_coords[2], element_coords[3]
         mouse_position = ""
-        if element_x1 == element_x2:
+        if e_x1 == e_x2:
             self._element_is_vertical = True
-            if event_x < element_x1:
+            if event_x < e_x1:
                 mouse_position = "left"
-            elif event_x == element_x1:
+            elif event_x == e_x1:
                 mouse_position = "overlap"
             else:
                 mouse_position = "right"
-        if element_y1 == element_y2:
+        if e_y1 == e_y2:
             self._element_is_horizontal = True
-            if event_y < element_y1:
+            if event_y < e_y1:
                 mouse_position = "top"
-            elif event_y == element_y1:
+            elif event_y == e_y1:
                 mouse_position = "overlap"
             else:
                 mouse_position = "bottom"
-        info_packet = [mouse_position, (event_x, event_y), (element_x1, element_y1)]
+        info_packet = [mouse_position, (event_x, event_y), (e_x1, e_y1)]
         return info_packet
 
     def element_in_click_range(self, data):
@@ -169,7 +160,6 @@ class Window:
 
     def mouse_button_1_release(self, event):
         self.update_element_and_cell()
-        self.line_properties()
 
     def update_element_and_cell(self):
         print("FFFFFFFFFFFFFFFFFFF")
@@ -192,14 +182,7 @@ class Window:
             print(f"002b: {self._arena_cells[self._element_sharing_cells[1]]}")
         print("FFFFFFFFFFFFFFFFFFF")
     
-    def line_properties(self):
-        pass
-            
-
-
-
-
-
+    
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -239,6 +222,11 @@ class Cell:
         self.top_wall = Line(Point(self._x1, self._y1), Point(self._x2, self._y1))
         self.bottom_wall = Line(Point(self._x1, self._y2), Point(self._x2, self._y2))
         self.walls_ids = []
+
+    def enclosed_status(self):
+        if self.has_left_wall and self.has_right_wall and self.has_top_wall and self.has_bottom_wall:
+            return True
+        return False
 
     def draw(self):
         if self._win is None:
