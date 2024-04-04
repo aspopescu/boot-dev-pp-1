@@ -1,4 +1,4 @@
-from tkinter import Tk, BOTH, Canvas, ttk, font
+from tkinter import ANCHOR, Tk, BOTH, Canvas, ttk, font
 import time
 
 class Window:
@@ -40,6 +40,12 @@ class Window:
 
     def add_button(self, button):
         button.create(self.__canvas)
+
+    def add_text(self, text):
+        text.create(self.__canvas)
+
+    def add_label(self, label):
+        label.create(self.__root)
 
     def mouse_motion(self, event):
         self._closest_element = 0
@@ -160,6 +166,7 @@ class Window:
 
     def mouse_button_1_press(self, event):
         self.update_element_and_cell()
+        self.players_scores_update()
 
     def update_element_and_cell(self):
         print("FFFFFFFFFFFFFFFFFFF")
@@ -177,10 +184,31 @@ class Window:
             if self._element_is_horizontal:
                 self._arena_cells[self._element_sharing_cells[0]].has_bottom_wall = True
                 self._arena_cells[self._element_sharing_cells[1]].has_top_wall = True
-        
+            for cell_id in self._element_sharing_cells:
+                self._arena_cells[cell_id].enclosed_status()
             print(f"001b: {self._arena_cells[self._element_sharing_cells[0]]}")
             print(f"002b: {self._arena_cells[self._element_sharing_cells[1]]}")
         print("FFFFFFFFFFFFFFFFFFF")
+
+    def import_players_scores(self, p1, p2):
+        self._p1 = p1
+        self._p2 = p2
+
+    def players_scores_update(self):
+        print("CCCCCCCCCCCCCCCCCCC")
+        if self._element_sharing_cells == []:
+            return
+        cell_1 = self._arena_cells[self._element_sharing_cells[0]]
+        cell_2 = self._arena_cells[self._element_sharing_cells[1]]
+        print(f"001c: {cell_1}")
+        print(f"002c: {cell_2}")
+        self._p1 += 1
+        
+        
+
+
+        print("CCCCCCCCCCCCCCCCCCC")
+
     
     
 class Point:
@@ -190,6 +218,7 @@ class Point:
 
     def __repr__(self):
         return f"Point(x({self.x}), y({self.y}))"
+
 
 class Line:
     def __init__(self, point1, point2):
@@ -222,11 +251,13 @@ class Cell:
         self.top_wall = Line(Point(self._x1, self._y1), Point(self._x2, self._y1))
         self.bottom_wall = Line(Point(self._x1, self._y2), Point(self._x2, self._y2))
         self.walls_ids = []
+        self.is_enclosed = False
 
     def enclosed_status(self):
         if self.has_left_wall and self.has_right_wall and self.has_top_wall and self.has_bottom_wall:
-            return True
-        return False
+            self.is_enclosed = True
+            return
+        self.is_enclosed = False
 
     def draw(self):
         if self._win is None:
@@ -256,7 +287,7 @@ class Cell:
         self.walls_ids.append(wall_id)
 
     def __repr__(self):
-        return f"Cell({self._x1}, {self._y1}, {self._x2}, {self._y2}, {self.has_left_wall}, {self.has_right_wall}, {self.has_top_wall}, {self.has_bottom_wall})"
+        return f"Cell({self._x1}, {self._y1}, {self._x2}, {self._y2}, lw: {self.has_left_wall}, rw: {self.has_right_wall}, tw: {self.has_top_wall}, bw: {self.has_bottom_wall}, enclosed: {self.is_enclosed})"
 
 
 class Button:
@@ -287,4 +318,19 @@ class Button:
             anchor="nw", 
             window=self._button
         )
+
+
+class Label:
+    def __init__(self, x, y, text, anchor, color):
+        self._x = x
+        self._y = y
+        self._text = text
+        self._anchor = anchor
+        self._color = color
+
+    def create(self, root):
+        ttk.Label(root, text=self._text, foreground=self._color ,font=("Times", 24, "bold")).place(x=self._x, y=self._y, anchor=self._anchor)
+
+    def __repr__(self):
+        return f"Label(text: {self._text})"
 
