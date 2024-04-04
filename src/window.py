@@ -9,7 +9,7 @@ class Window:
         self.__canvas.pack(fill=BOTH, expand=True)
         self._line_dash_pattern = 3
         self.__canvas.bind("<Motion>", self.mouse_motion)
-        self.__canvas.bind("<ButtonRelease-1>", self.mouse_button_1_release)
+        self.__canvas.bind("<Button-1>", self.mouse_button_1_press)
         self.__window_running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
@@ -158,7 +158,7 @@ class Window:
         self._arena_cells = arena_cells
         print("&&&&&&&&&&&&&&&&&&&")
 
-    def mouse_button_1_release(self, event):
+    def mouse_button_1_press(self, event):
         self.update_element_and_cell()
 
     def update_element_and_cell(self):
