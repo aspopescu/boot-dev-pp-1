@@ -189,10 +189,14 @@ class Window:
         self._labels_pack[self._current_player].set_text(self._labels_pack[self._current_player]._text)
 
     def mark_closed_cell(self, cell):
-        line_1 = Line(Point(cell._x1, cell._y1), Point(cell._x2, cell._y2))
-        line_2 = Line(Point(cell._x1, cell._y2), Point(cell._x2, cell._y1))
-        self.draw_line(line_1, fill_color=self._current_player_color)
-        self.draw_line(line_2, fill_color=self._current_player_color)
+        line_mark_1 = Line(Point(cell._x1, cell._y1), Point(cell._x2, cell._y2))
+        line_mark_2 = Line(Point(cell._x1, cell._y2), Point(cell._x2, cell._y1))
+        self._mark_1 = self.draw_line(line_mark_1, fill_color=self._current_player_color)
+        self._mark_2 = self.draw_line(line_mark_2, fill_color=self._current_player_color)
+
+    def remove_marks(self):
+        self.delete_element(self._mark_1)
+        self.delete_element(self._mark_2)
 
     
 class Point:

@@ -19,6 +19,7 @@ def main():
         first_turn_player = random.randint(0, 1)
         frames.initiate_labels(first_turn_player)
         arena.redraw_cells()
+        win.remove_marks()
         win.import_labels(frames._labels_pack)
         win.import_arena_cells(arena._cells)
     new_board_button = Button("New board", host_frame=frames.buttons_area, command=new_board_commands)
