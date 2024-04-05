@@ -16,6 +16,7 @@ class Window:
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self._ww = width
         self._wh = height
+        self.marks = []
 
     def redraw(self):
         self.__root.update_idletasks()
@@ -145,9 +146,11 @@ class Window:
             if self._element_is_vertical:
                 self._arena_cells[self._element_sharing_cells[0]].has_right_wall = True
                 self._arena_cells[self._element_sharing_cells[1]].has_left_wall = True
+                self._lastest_line_added = [self._element_to_edit, "vertical_line"]
             if self._element_is_horizontal:
                 self._arena_cells[self._element_sharing_cells[0]].has_bottom_wall = True
                 self._arena_cells[self._element_sharing_cells[1]].has_top_wall = True
+                self._lastest_line_added = [self._element_to_edit, "horizontal_line"]
             for cell_id in self._element_sharing_cells:
                 self._arena_cells[cell_id].enclosed_status()
 
@@ -179,24 +182,112 @@ class Window:
             self._labels_pack[2].set_text(self._labels_pack[2]._text)
             return
         points = 0
+        closed_cell = 0
         if cell_1.is_enclosed:
             points += 1
             self.mark_closed_cell(cell_1)
+            closed_cell = cell_1
+        print(f"points1: {points}")
         if cell_2.is_enclosed:
             points += 1
             self.mark_closed_cell(cell_2)
+            closed_cell = cell_2
+        print(f"points2: {points}")
+        if points == 1:
+            print(f"points3: {points}")
+            #auto_points = self.auto_close(closed_cell, self._lastest_line_added)
+            #points += auto_points
         self._labels_pack[self._current_player]._text += points
         self._labels_pack[self._current_player].set_text(self._labels_pack[self._current_player]._text)
 
     def mark_closed_cell(self, cell):
         line_mark_1 = Line(Point(cell._x1, cell._y1), Point(cell._x2, cell._y2))
         line_mark_2 = Line(Point(cell._x1, cell._y2), Point(cell._x2, cell._y1))
-        self._mark_1 = self.draw_line(line_mark_1, fill_color=self._current_player_color)
-        self._mark_2 = self.draw_line(line_mark_2, fill_color=self._current_player_color)
+        mark_1 = self.draw_line(line_mark_1, fill_color=self._current_player_color)
+        mark_2 = self.draw_line(line_mark_2, fill_color=self._current_player_color)
+        self.marks.append(mark_1)
+        self.marks.append(mark_2)
 
     def remove_marks(self):
-        self.delete_element(self._mark_1)
-        self.delete_element(self._mark_2)
+        for mark in self.marks:
+            self.delete_element(mark)
+
+    def auto_close(self, cell, latest_line, start_points=0):
+        print("XXXXXXXXXXXXXXXX")
+        e_coordinates = self.__canvas.coords(latest_line[0])
+        e_x1, e_y1, e_x2, e_y2 = e_coordinates[0], e_coordinates[1], e_coordinates[2], e_coordinates[3]        
+        start_x1, start_y1, start_x2, start_y2 = cell._x1, cell._y1, cell._x2, cell._y2
+        next_cell = Cell(0,0,0,0)
+        if latest_line[1] == "vertical_line":
+            if start_x1 == e_x1:
+                next_cell_x2, next_cell_y2 = e_x1, e_y2
+                for cell in self._arena_cells:
+                    if cell._x2 == next_cell_x2 and cell._y2 == next_cell_y2:
+                        next_cell = cell
+            if start_x2 == e_x1:
+                next_cell_x1, next_cell_y1 = e_x1, e_y1
+                for cell in self._arena_cells:
+                    if cell._x1 == next_cell_x1 and cell._y1 == next_cell_y1:
+                        next_cell = cell
+        if latest_line[1] == "horizontal_line":
+            if start_y1 == e_y1:
+                next_cell_x2, next_cell_y2 = e_x2, e_y1
+                for cell in self._arena_cells:
+                    if cell._x2 == next_cell_x2 and cell._y2 == next_cell_y2:
+                        next_cell = cell
+            if start_y2 == e_y1:
+                next_cell_x1, next_cell_y1 = e_x1, e_y1
+                for cell in self._arena_cells:
+                    if cell._x1 == next_cell_x1 and cell._y1 == next_cell_y1:
+                        next_cell = cell
+        if next_cell.missing_walls()[0] > 1:
+            return start_points
+        next_line_id = 0
+        plane = ""
+        latest_element = []
+        if next_cell.missing_walls()[0] == 1:
+            n_x1, n_y1 = next_cell.missing_walls()[1][0][0], next_cell.missing_walls()[1][0][1]
+            next_line_id = self.__canvas.find_closest(n_x1, n_y1)[0]
+            self.__canvas.itemconfig(next_line_id, dash=(), fill=self._current_player_color)
+            self.mark_closed_cell(next_cell)
+            next_cell_wall = next_cell.missing_walls()[2]
+            if next_cell_wall == "lw":
+                plane = "vertical_line"
+                next_cell.has_left_wall = True
+                for cell in self._arena_cells:
+                    if cell._x2 == next_cell._x1 and cell._y2 == next_cell._y2:
+                        cell.has_right_wall = True
+                        print(f"0: {next_cell}")
+                        print(f"1: {cell}")
+            if next_cell_wall == "rw":
+                plane = "vertical_line"
+                next_cell.has_right_wall = True
+                for cell in self._arena_cells:
+                    if cell._x1 == next_cell._x2 and cell._y1 == next_cell._y1:
+                        cell.has_left_wall = True
+                        print(f"0: {next_cell}")
+                        print(f"1: {cell}")
+            if next_cell_wall == "tw":
+                plane = "horizontal_line"
+                next_cell.has_top_wall = True
+                for cell in self._arena_cells:
+                    if cell._x2 == next_cell._x2 and cell._y2 == next_cell._y1:
+                        cell.has_bottom_wall = True
+                        print(f"0: {next_cell}")
+                        print(f"1: {cell}")
+            if next_cell_wall == "bw":
+                plane = "horizontal_line"
+                next_cell.has_bottom_wall = True
+                for cell in self._arena_cells:
+                    if cell._x1 == next_cell._x1 and cell._y1 == next_cell._y2:
+                        cell.has_top_wall = True
+                        print(f"0: {next_cell}")
+                        print(f"1: {cell}")
+            latest_element = [next_line_id, plane]
+            start_points += 1
+        start_points += self.auto_close(next_cell, latest_element, start_points)
+        print(f"XXXXXXXXXXXXXXXX: {start_points}")
+        return start_points
 
     
 class Point:
@@ -246,6 +337,29 @@ class Cell:
             self.is_enclosed = True
             return
         self.is_enclosed = False
+
+    def missing_walls(self):
+        count = 0
+        missing_walls = []
+        wall = ""
+        half_wall = (self._x2 - self._x1) / 2
+        if not self.has_left_wall:
+            count += 1
+            missing_walls.append([self._x1, self._y1 + half_wall])
+            wall = "lw"
+        if not self.has_right_wall:
+            count += 1
+            missing_walls.append([self._x2, self._y1 + half_wall])
+            wall = "rw"
+        if not self.has_top_wall:
+            count += 1
+            missing_walls.append([self._x1 + half_wall, self._y1])
+            wall = "tw"
+        if not self.has_bottom_wall:
+            count += 1
+            missing_walls.append([self._x1 + half_wall, self._y2])
+            wall = "bw"
+        return count, missing_walls, wall
 
     def draw(self):
         if self._win is None:
