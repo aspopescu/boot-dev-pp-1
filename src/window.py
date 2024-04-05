@@ -1,5 +1,7 @@
-from tkinter import ANCHOR, Tk, BOTH, Canvas, ttk, font
+from tkinter import Tk, BOTH, Canvas, ttk, font
 import time
+import tkinter
+import random
 
 class Window:
     def __init__(self, width, height):
@@ -41,10 +43,7 @@ class Window:
     def add_button(self, button):
         button.create(self.__canvas)
 
-    def add_text(self, text):
-        text.create(self.__canvas)
-
-    def add_label(self, label):
+    def draw_label(self, label):
         label.create(self.__root)
 
     def mouse_motion(self, event):
@@ -62,14 +61,6 @@ class Window:
         closest_element_coordinates = self.__canvas.coords(closest_element)
         cursor_element_data = self.mouse_cursor_position(event.x, event.y, closest_element_coordinates)
         element_in_range = self.element_in_click_range(cursor_element_data)
-        print("===================")
-        print(f"closest_element_id: {closest_element}, mouse x: {event.x}, mouse y: {event.y}, coordinates: {closest_element_coordinates}")
-        print(f"mouse cursor position, cursor, element coordinates: {cursor_element_data}")
-        print(f"mouse cursor near element: {element_in_range}")
-        print(f"self._element_is_vertical: {self._element_is_vertical}")
-        print(f"self._element_is_horizontal: {self._element_is_horizontal}")
-        print(f"element cells: {self._element_sharing_cells}")
-        print("===================")
         if element_in_range:
             self._closest_element = closest_element
         self._element_in_range = element_in_range
@@ -108,76 +99,49 @@ class Window:
         return False
 
     def element_dash_check(self):
-        print("-------------------")
-        print(f"element: {self._closest_element}")
         current_pattern = self.__canvas.itemcget(self._closest_element, option="dash")
-        print(f"current_pattern: {current_pattern}")
         if current_pattern != "":
-            print(int(current_pattern) == int(self._line_dash_pattern))
             if int(current_pattern) == int(self._line_dash_pattern):
-                print("matching dash pattern")
-                print(f"self._element_is_vertical: {self._element_is_vertical}")
-                print(f"self._element_is_horizontal: {self._element_is_horizontal}")
                 if self._element_in_range:
                     self.update_mouse_cursor("pencil")
                     self._element_to_edit = self._closest_element
                     self.find_element_sharing_cells()
-                    print(f"element cells: {self._element_sharing_cells}")
-        print("-------------------")
 
     def update_mouse_cursor(self, new_cursor):
         self.__canvas.config(cursor=new_cursor)
 
     def find_element_sharing_cells(self):
-        print("@@@@@@@@@@@@@@@@@@@")
-        print(f"self._element_to_edit: {self._element_to_edit}")
         e_coordinates = self.__canvas.coords(self._element_to_edit)
-        print(f"element_coordinates: {e_coordinates}")
         e_x1, e_y1, e_x2, e_y2 = e_coordinates[0], e_coordinates[1], e_coordinates[2], e_coordinates[3]
-        print(f"x1, y2, x2, y2: {e_x1, e_y1, e_x2, e_y2}")
         if self._element_is_vertical:
-            print("for vertical line, make 2 horizontal cells")
             left_cell_x2, left_cell_y2 = e_x1, e_y2
             right_cell_x1, right_cell_y1 = e_x1, e_y1
             for cell in self._arena_cells:
                 if cell._x2 == left_cell_x2 and cell._y2 == left_cell_y2:
-                    print(f"left cell found: {cell}")
                     self._element_sharing_cells.append(self._arena_cells.index(cell))
                 if cell._x1 == right_cell_x1 and cell._y1 == right_cell_y1:
-                    print(f"right cell found: {cell}")
                     self._element_sharing_cells.append(self._arena_cells.index(cell))
         if self._element_is_horizontal:
-            print("for horizontal line, make 2 vertical cells")
             top_cell_x2, top_cell_y2 = e_x2, e_y1
             bottom_cell_x1, bottom_cell_y1 = e_x1, e_y1
             for cell in self._arena_cells:
                 if cell._x2 == top_cell_x2 and cell._y2 == top_cell_y2:
-                    print(f"top cell found: {cell}")
                     self._element_sharing_cells.append(self._arena_cells.index(cell))
                 if cell._x1 == bottom_cell_x1 and cell._y1 == bottom_cell_y1:
-                    print(f"bottom cell found: {cell}")
                     self._element_sharing_cells.append(self._arena_cells.index(cell))
-        print("@@@@@@@@@@@@@@@@@@@")
 
     def import_arena_cells(self, arena_cells):
-        print("&&&&&&&&&&&&&&&&&&&")
         self._arena_cells = arena_cells
-        print("&&&&&&&&&&&&&&&&&&&")
 
     def mouse_button_1_press(self, event):
         self.update_element_and_cell()
-        self.players_scores_update()
+        self.update_players_labels()
+        self._element_to_edit = 0
 
     def update_element_and_cell(self):
-        print("FFFFFFFFFFFFFFFFFFF")
-        print(f"_element_to_edit: {self._element_to_edit}")
         if self._element_to_edit != 0:
-            print("can edit something")
-            self.__canvas.itemconfig(self._element_to_edit, dash=(), fill="black")
+            self.__canvas.itemconfig(self._element_to_edit, dash=(), fill=self._current_player_color)
             self.update_mouse_cursor("arrow")
-
-            print(f"001a: {self._arena_cells[self._element_sharing_cells[0]]}")
-            print(f"002a: {self._arena_cells[self._element_sharing_cells[1]]}")
             if self._element_is_vertical:
                 self._arena_cells[self._element_sharing_cells[0]].has_right_wall = True
                 self._arena_cells[self._element_sharing_cells[1]].has_left_wall = True
@@ -186,30 +150,50 @@ class Window:
                 self._arena_cells[self._element_sharing_cells[1]].has_top_wall = True
             for cell_id in self._element_sharing_cells:
                 self._arena_cells[cell_id].enclosed_status()
-            print(f"001b: {self._arena_cells[self._element_sharing_cells[0]]}")
-            print(f"002b: {self._arena_cells[self._element_sharing_cells[1]]}")
-        print("FFFFFFFFFFFFFFFFFFF")
 
-    def import_players_scores(self, p1, p2):
-        self._p1 = p1
-        self._p2 = p2
+    def import_labels(self, labels):
+        self._labels_pack = labels[0]
+        self._1st_player = labels[1]
+        if self._1st_player == 0:
+            self._2nd_player = 1
+        else: 
+            self._2nd_player = 0
+        self._current_player = self._1st_player
+        self._current_player_color = self._labels_pack[self._current_player]._color
 
-    def players_scores_update(self):
-        print("CCCCCCCCCCCCCCCCCCC")
+    def update_players_labels(self):
+        if self._element_to_edit == 0:
+            return
         if self._element_sharing_cells == []:
             return
         cell_1 = self._arena_cells[self._element_sharing_cells[0]]
         cell_2 = self._arena_cells[self._element_sharing_cells[1]]
-        print(f"001c: {cell_1}")
-        print(f"002c: {cell_2}")
-        self._p1 += 1
-        
-        
+        if not cell_1.is_enclosed and not cell_2.is_enclosed:
+            if self._current_player == self._1st_player:
+                self._current_player = self._2nd_player
+            else:
+                self._current_player = self._1st_player
+            self._current_player_color = self._labels_pack[self._current_player]._color
+            self._labels_pack[2]._text = f"Turn: Player {self._current_player + 1}"
+            self._labels_pack[2].set_color(self._current_player_color)
+            self._labels_pack[2].set_text(self._labels_pack[2]._text)
+            return
+        points = 0
+        if cell_1.is_enclosed:
+            points += 1
+            self.mark_closed_cell(cell_1)
+        if cell_2.is_enclosed:
+            points += 1
+            self.mark_closed_cell(cell_2)
+        self._labels_pack[self._current_player]._text += points
+        self._labels_pack[self._current_player].set_text(self._labels_pack[self._current_player]._text)
 
+    def mark_closed_cell(self, cell):
+        line_1 = Line(Point(cell._x1, cell._y1), Point(cell._x2, cell._y2))
+        line_2 = Line(Point(cell._x1, cell._y2), Point(cell._x2, cell._y1))
+        self.draw_line(line_1, fill_color=self._current_player_color)
+        self.draw_line(line_2, fill_color=self._current_player_color)
 
-        print("CCCCCCCCCCCCCCCCCCC")
-
-    
     
 class Point:
     def __init__(self, x, y):
@@ -327,9 +311,18 @@ class Label:
         self._text = text
         self._anchor = anchor
         self._color = color
+        self._text_var = tkinter.StringVar()
+
+    def set_text(self, text):
+        self._text_var.set(text)
+
+    def set_color(self, color):
+        self._label.config(foreground=color)
 
     def create(self, root):
-        ttk.Label(root, text=self._text, foreground=self._color ,font=("Times", 24, "bold")).place(x=self._x, y=self._y, anchor=self._anchor)
+        self.set_text(self._text)
+        self._label = ttk.Label(root, textvariable=self._text_var, foreground=self._color , font=("Times", 24, "bold"))
+        self._label.place(x=self._x, y=self._y, anchor=self._anchor)
 
     def __repr__(self):
         return f"Label(text: {self._text})"

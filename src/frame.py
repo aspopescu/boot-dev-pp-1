@@ -1,7 +1,7 @@
 from window import *
 
 class Frame:
-    def __init__(self, x1, y1, win, generic_distance=None):
+    def __init__(self, x1, y1, win, first_turn_player, generic_distance=None):
         self._x1 = x1
         self._y1 = y1
         self._win = win
@@ -17,7 +17,7 @@ class Frame:
         self.arena = 0
         self._frames = []
         self._draw_frames()
-        self.initiate_score_values()
+        self.initiate_labels(first_turn_player)
 
     def _draw_frames(self):
         # calcutate main frame
@@ -26,7 +26,6 @@ class Frame:
         main_frame_x2 = self._win_width - self._x1
         main_frame_y2 = self._win_height - self._y1
         main_frame = Cell(main_frame_x1, main_frame_y1, main_frame_x2, main_frame_y2, self._win)
-        #main_frame.draw()
         #self._animate()
         self._frames.append(main_frame)
         # calcutate bottom square
@@ -80,27 +79,26 @@ class Frame:
         self._frames[i].draw()
         self._win._animate()
 
-    def initiate_score_values(self):
-        self._player_1_score = 0
-        self._player_2_score = 0
+    def initiate_labels(self, player_id):
+        # a player is defined by: score, id, color
+        self._player_1 = [0, 1, "#0000ff"]
+        self._player_2 = [0, 2, "#ff5050"]
+        self._players = [self._player_1 , self._player_2]
+        self._current_player = player_id 
         self.add_labels()
 
     def add_labels(self):
-        player_1 = ["Player 1", "#0000ff"]
-        player_2 = ["Player 2", "#ff5050"]
         x = self.current_turn._x2 - (self.current_turn._x2 - self.current_turn._x1) / 2
         y = self.current_turn._y2 - (self.current_turn._y2 - self.current_turn._y1) / 2
-        l1 = Label(x, y, f"Turn: {player_2[0]}", "center", player_2[1])
-        self._win.add_label(l1)
-
+        self._turn_label = Label(x, y, f"Turn: Player {self._players[self._current_player][1]}", "center", self._players[self._current_player][2])
+        self._win.draw_label(self._turn_label)
         score_1_x = self.scoreboard_1._x2 - (self.scoreboard_1._x2 - self.scoreboard_1._x1) / 2
         score_1_y = self.scoreboard_1._y2 - (self.scoreboard_1._y2 - self.scoreboard_1._y1) / 2
-        label_score_1 = Label(score_1_x, score_1_y, self._player_1_score, "center", player_1[1])
-        self._win.add_label(label_score_1)
+        self._score_1_label = Label(score_1_x, score_1_y, self._player_1[0], "center", self._player_1[2])
+        self._win.draw_label(self._score_1_label)
         score_2_x = self.scoreboard_2._x2 - (self.scoreboard_2._x2 - self.scoreboard_2._x1) / 2
         score_2_y = self.scoreboard_2._y2 - (self.scoreboard_2._y2 - self.scoreboard_2._y1) / 2
-        label_score_2 = Label(score_2_x, score_2_y, self._player_2_score, "center", player_2[1])
-        self._win.add_label(label_score_2)
-
-
+        self._score_2_label = Label(score_2_x, score_2_y, self._player_2[0], "center", self._player_2[2])
+        self._win.draw_label(self._score_2_label)
+        self._labels_pack = [[self._score_1_label, self._score_2_label, self._turn_label], self._current_player]
 
