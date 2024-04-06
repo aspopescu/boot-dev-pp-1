@@ -1,5 +1,7 @@
 # boot-dev-pp-1 - "Biscuit"
 
+![game](media/12_progress_at_06_April_2024.png)
+
 https://www.boot.dev/learn/build-personal-project-1
 
 https://tkdocs.com/tutorial/canvas.html
@@ -39,6 +41,8 @@ Blocking the opponent: Although the main goal is not to block the opponent, you 
 ### Planning moves: 
 
 Think about future moves and try to anticipate and prevent the opponent from enclosing important squares.
+
+![biscuit.gif](media/biscuit.gif)
 
 ***
 
