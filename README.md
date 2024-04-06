@@ -41,3 +41,10 @@ Blocking the opponent: Although the main goal is not to block the opponent, you 
 Think about future moves and try to anticipate and prevent the opponent from enclosing important squares.
 
 ***
+
+## Dependencies
+
+python 3.12.2 - https://www.python.org/downloads/ , https://wiki.python.org/moin/BeginnersGuide/Download
+
+tkinter 8.6 - https://tkdocs.com/tutorial/install.html
+
