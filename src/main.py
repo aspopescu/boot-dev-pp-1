@@ -6,8 +6,8 @@ def main():
     # At the moment, I recommend to not change the window width and height, and the distance
     # I need to think about checks for these 3, to avoid broken scenarios
     # Maybe I should enforce a 7:8 ratio for width:height, maybe
-    window_width = 700
-    window_height = 800
+    window_width = 770
+    window_height = 880
     generic_distance = 18
     first_turn_player = random.randint(0, 1)
     win = Window(window_width, window_height)
