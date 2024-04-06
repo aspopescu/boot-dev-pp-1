@@ -4,7 +4,8 @@ class Arena:
     def __init__(self, win, frame):
         self._win = win
         self._frame = frame
-        self._wall_length = self._frame.game_wall_length
+        #self._wall_length = self._frame.game_wall_length
+        self._wall_length = 45
         self._arena = self._frame.arena
         self._create_cells()
         self._draw_cells(self._cells)

@@ -187,16 +187,13 @@ class Window:
             points += 1
             self.mark_closed_cell(cell_1)
             closed_cell = cell_1
-        print(f"points1: {points}")
         if cell_2.is_enclosed:
             points += 1
             self.mark_closed_cell(cell_2)
             closed_cell = cell_2
-        print(f"points2: {points}")
         if points == 1:
-            print(f"points3: {points}")
-            #auto_points = self.auto_close(closed_cell, self._lastest_line_added)
-            #points += auto_points
+            auto_points = self.auto_close(closed_cell, self._lastest_line_added)
+            points += auto_points
         self._labels_pack[self._current_player]._text += points
         self._labels_pack[self._current_player].set_text(self._labels_pack[self._current_player]._text)
 
@@ -213,7 +210,6 @@ class Window:
             self.delete_element(mark)
 
     def auto_close(self, cell, latest_line, start_points=0):
-        print("XXXXXXXXXXXXXXXX")
         e_coordinates = self.__canvas.coords(latest_line[0])
         e_x1, e_y1, e_x2, e_y2 = e_coordinates[0], e_coordinates[1], e_coordinates[2], e_coordinates[3]        
         start_x1, start_y1, start_x2, start_y2 = cell._x1, cell._y1, cell._x2, cell._y2
@@ -240,8 +236,11 @@ class Window:
                 for cell in self._arena_cells:
                     if cell._x1 == next_cell_x1 and cell._y1 == next_cell_y1:
                         next_cell = cell
+        if next_cell.missing_walls()[0] == 0:
+            self.mark_closed_cell(next_cell)
+            return 1
         if next_cell.missing_walls()[0] > 1:
-            return start_points
+            return 0
         next_line_id = 0
         plane = ""
         latest_element = []
@@ -257,36 +256,27 @@ class Window:
                 for cell in self._arena_cells:
                     if cell._x2 == next_cell._x1 and cell._y2 == next_cell._y2:
                         cell.has_right_wall = True
-                        print(f"0: {next_cell}")
-                        print(f"1: {cell}")
             if next_cell_wall == "rw":
                 plane = "vertical_line"
                 next_cell.has_right_wall = True
                 for cell in self._arena_cells:
                     if cell._x1 == next_cell._x2 and cell._y1 == next_cell._y1:
                         cell.has_left_wall = True
-                        print(f"0: {next_cell}")
-                        print(f"1: {cell}")
             if next_cell_wall == "tw":
                 plane = "horizontal_line"
                 next_cell.has_top_wall = True
                 for cell in self._arena_cells:
                     if cell._x2 == next_cell._x2 and cell._y2 == next_cell._y1:
                         cell.has_bottom_wall = True
-                        print(f"0: {next_cell}")
-                        print(f"1: {cell}")
             if next_cell_wall == "bw":
                 plane = "horizontal_line"
                 next_cell.has_bottom_wall = True
                 for cell in self._arena_cells:
                     if cell._x1 == next_cell._x1 and cell._y1 == next_cell._y2:
                         cell.has_top_wall = True
-                        print(f"0: {next_cell}")
-                        print(f"1: {cell}")
             latest_element = [next_line_id, plane]
+            start_points += self.auto_close(next_cell, latest_element, start_points)
             start_points += 1
-        start_points += self.auto_close(next_cell, latest_element, start_points)
-        print(f"XXXXXXXXXXXXXXXX: {start_points}")
         return start_points
 
     
