@@ -52,3 +52,15 @@ python 3.12.2 - https://www.python.org/downloads/ , https://wiki.python.org/moin
 
 tkinter 8.6 - https://tkdocs.com/tutorial/install.html
 
+***
+
+## How to run it
+
+1. Have the dependencies installed
+2. In a terminal, access the *src* directory
+3. Run either `python main.py` or `python3 main.py`
+4. A window displaying the game should now be available on the screen
+5. At random, *Player 1* or *Player 2* will have the first turn
+6. The game has an auto-close cell feature for the special rule (see "How to play")
+
+   
